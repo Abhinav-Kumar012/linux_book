@@ -35,12 +35,21 @@ jobs:
           OUTDIR="build/html"
           mkdir -p "$OUTDIR/css" "$OUTDIR/js"
 
-          # ── Combine all markdown ──
+          # ── Combine all markdown in correct order ──
           echo "Combining chapters..."
           : > build/combined.md
-          find part* appendices -name "*.md" -type f | sort | while read f; do
-            cat "$f"
-            printf '\n\n\\newpage\n\n'
+          for part_dir in \
+            part1-history part2-installation part3-shell part4-commands \
+            part5-filesystems part6-process part7-memory part8-kernel \
+            part9-syscalls part10-networking part11-security part12-containers \
+            part13-ebpf part14-drivers part15-boot part16-elf \
+            part17-debugging part18-performance part19-source-walkthrough \
+            part20-programming appendices; do
+            if [ -d "$part_dir" ]; then
+              for f in "$part_dir"/*.md; do
+                [ -f "$f" ] && cat "$f" && printf '\n\n\\newpage\n\n'
+              done
+            fi
           done >> build/combined.md
 
           echo "Files combined: $(wc -w < build/combined.md) words"
