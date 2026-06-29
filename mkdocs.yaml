@@ -1,6 +1,6 @@
 site_name: The Comprehensive Linux Handbook
 site_description: From Beginner to Kernel Developer
-site_url: https://YOUR_USERNAME.github.io/linux-handbook/
+site_url: https://abhinav-kumar012.github.io/linux_book/
 
 theme:
   name: material
