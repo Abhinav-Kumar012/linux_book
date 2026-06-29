@@ -25,7 +25,7 @@ jobs:
 
       - name: Install pandoc (latest release)
         run: |
-          curl -sL https://github.com/jgm/pandoc/releases/download/3.1.11/pandoc-3.1.11-linux-amd64.tar.gz | tar xz --strip-components=1 -C /usr/local
+          curl -sL https://github.com/jgm/pandoc/releases/download/3.1.11/pandoc-3.1.11-linux-amd64.tar.gz | sudo tar xz --strip-components=1 -C /usr/local
           pandoc --version | head -1
 
       - name: Build HTML
