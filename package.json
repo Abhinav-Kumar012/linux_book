@@ -1,0 +1,16 @@
+{
+  "name": "linux-handbook",
+  "version": "1.0.0",
+  "description": "**A Complete Linux Encyclopedia — From Beginner to Kernel Developer**",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "pdf-lib": "^1.17.1",
+    "playwright-core": "^1.61.1"
+  }
+}
