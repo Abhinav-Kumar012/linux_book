@@ -1,200 +1,27 @@
-name: Deploy to GitHub Pages
+name: Deploy Documentation
 
 on:
   push:
     branches:
       - main
-      - master
-  workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: pages
-  cancel-in-progress: true
+  contents: write
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      # REQUIRED for GitHub Pages
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v5
-
-      - name: Install Pandoc
-        run: |
-          curl -fsSL https://github.com/jgm/pandoc/releases/download/3.1.11/pandoc-3.1.11-linux-amd64.tar.gz \
-          | sudo tar xz --strip-components=1 -C /usr/local
-
-          pandoc --version | head -1
-
-      - name: Build HTML
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          mkdir -p build
-          OUTDIR="build/html"
-
-          mkdir -p "$OUTDIR/css"
-
-          echo "Combining chapters..."
-
-          > build/combined.md
-
-          for part_dir in \
-            part1-history \
-            part2-installation \
-            part3-shell \
-            part4-commands \
-            part5-filesystems \
-            part6-process \
-            part7-memory \
-            part8-kernel \
-            part9-syscalls \
-            part10-networking \
-            part11-security \
-            part12-containers \
-            part13-ebpf \
-            part14-drivers \
-            part15-boot \
-            part16-elf \
-            part17-debugging \
-            part18-performance \
-            part19-source-walkthrough \
-            part20-programming \
-            appendices
-          do
-            if [ -d "$part_dir" ]; then
-              for f in "$part_dir"/*.md; do
-                [ -f "$f" ] || continue
-                cat "$f" >> build/combined.md
-                printf '\n\n\\newpage\n\n' >> build/combined.md
-              done
-            fi
-          done
-
-          echo "Words: $(wc -w < build/combined.md)"
-
-          cat > build/header.html <<EOF
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          EOF
-
-          pandoc \
-            build/combined.md \
-            --from=markdown \
-            --to=html5 \
-            --standalone \
-            --toc \
-            --toc-depth=2 \
-            --highlight-style=tango \
-            --metadata title="The Comprehensive Linux Handbook" \
-            --css css/style.css \
-            --include-in-header=build/header.html \
-            -o "$OUTDIR/index.html"
-
-          cat > "$OUTDIR/css/style.css" <<'EOF'
-          :root{
-            --bg:#fdfdfd;
-            --fg:#1a1a1a;
-            --accent:#d63384;
-            --link:#0969da;
-            --code-bg:#f6f8fa;
-            --border:#d0d7de;
-          }
-
-          @media(prefers-color-scheme:dark){
-            :root{
-              --bg:#0d1117;
-              --fg:#c9d1d9;
-              --accent:#f778ba;
-              --link:#58a6ff;
-              --code-bg:#161b22;
-              --border:#30363d;
-            }
-          }
-
-          *{
-            box-sizing:border-box;
-          }
-
-          body{
-            max-width:52rem;
-            margin:auto;
-            padding:2rem;
-            font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
-            line-height:1.7;
-            color:var(--fg);
-            background:var(--bg);
-          }
-
-          h1{
-            border-bottom:2px solid var(--accent);
-            padding-bottom:.3rem;
-          }
-
-          h2{
-            color:var(--accent);
-            margin-top:2rem;
-          }
-
-          pre{
-            overflow:auto;
-            padding:1rem;
-            background:var(--code-bg);
-            border:1px solid var(--border);
-            border-radius:8px;
-          }
-
-          code{
-            background:var(--code-bg);
-            padding:.15em .35em;
-          }
-
-          table{
-            border-collapse:collapse;
-            width:100%;
-          }
-
-          th,td{
-            border:1px solid var(--border);
-            padding:.5rem;
-          }
-
-          a{
-            color:var(--link);
-          }
-          EOF
-
-          ls -lh "$OUTDIR"
-
-      - name: Upload GitHub Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: build/html
-
   deploy:
-    needs: build
-
     runs-on: ubuntu-latest
 
-    permissions:
-      pages: write
-      id-token: write
-
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
     steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: |
+          pip install \
+            mkdocs-material \
+            pymdown-extensions
+
+      - run: mkdocs gh-deploy --force
